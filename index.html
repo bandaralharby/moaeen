@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17365D">
+<title>مُعين المعلم</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;color:#17365D;background:#f4f7fb}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7fb;padding:18px}
+.wrap{max-width:820px;margin:auto}
+.hero{padding:14px 2px 20px}
+h1{margin:0;font-size:34px}.lead{color:#64748b;margin:8px 0 0}
+.card{background:white;border-radius:22px;padding:20px;box-shadow:0 10px 30px rgba(15,23,42,.08);margin-bottom:16px}
+label{display:block;font-weight:800;margin:13px 0 7px}
+select,input{width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:13px;font-size:17px;background:#fff}
+button{width:100%;padding:15px;border:0;border-radius:14px;background:#2F75B5;color:#fff;font-weight:800;font-size:18px;margin-top:16px}
+button.secondary{background:#e8eef5;color:#17365D}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hidden{display:none!important}
+.status{margin-top:12px;color:#64748b;text-align:center}
+.badge{display:inline-block;background:#DDEBF7;padding:7px 12px;border-radius:999px;font-weight:800}
+.q{padding:14px;border:1px solid #e2e8f0;background:#f8fafc;border-radius:13px;margin:10px 0;color:#0f172a}
+.ans{margin-top:8px;color:#475569}
+@media(max-width:600px){body{padding:12px}.grid{grid-template-columns:1fr}}
+@media print{
+ body{background:white;padding:0}.no-print{display:none!important}.card{box-shadow:none;padding:0}
+ .wrap{max-width:none}.q{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="hero">
+    <h1>مُعين المعلم</h1>
+    <p class="lead">مولّد ملفات تعليمية — نسخة تجريبية</p>
+  </div>
+
+  <section class="card no-print">
+    <label for="lesson">الدرس</label>
+    <select id="lesson"><option>مقدمة في الأمن السيبراني</option></select>
+
+    <label for="type">نوع الملف</label>
+    <select id="type">
+      <option value="worksheet">ورقة عمل</option>
+      <option value="quiz">اختبار قصير</option>
+      <option value="activity">نشاط تطبيقي</option>
+      <option value="question_bank">بنك أسئلة</option>
+    </select>
+
+    <label for="count">عدد الأسئلة</label>
+    <select id="count"><option>5</option><option>10</option><option>15</option></select>
+
+    <label for="answers">نموذج الإجابة</label>
+    <select id="answers"><option value="true">نعم</option><option value="false">لا</option></select>
+
+    <label for="teacher">اسم المعلم/ـة (اختياري)</label>
+    <input id="teacher" placeholder="اكتب الاسم هنا">
+
+    <button id="generate" type="button">إنشاء الملف ✨</button>
+    <div id="status" class="status"></div>
+  </section>
+
+  <section id="result" class="card hidden">
+    <span id="title" class="badge">المعاينة</span>
+    <h2 id="lessonTitle"></h2>
+    <div id="teacherLine" style="color:#64748b;margin-bottom:12px"></div>
+    <div id="questions"></div>
+    <div class="grid no-print">
+      <button id="print" type="button">طباعة / حفظ PDF</button>
+      <button id="edit" type="button" class="secondary">تعديل الخيارات</button>
+    </div>
+  </section>
+</main>
+
+<script>
+const API='https://cixwjisioawswnnwwswf.supabase.co/functions/v1/moaeen-generate';
+const $=id=>document.getElementById(id);
+
+$('generate').addEventListener('click', async ()=>{
+  $('status').textContent='جاري إنشاء الملف...';
+  $('generate').disabled=true;
+  try{
+    const res=await fetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        lesson:$('lesson').value,
+        file_type:$('type').value,
+        count:Number($('count').value),
+        include_answers:$('answers').value==='true',
+        teacher_name:$('teacher').value.trim()
+      })
+    });
+    const data=await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error||'تعذر إنشاء الملف');
+
+    $('title').textContent=data.title;
+    $('lessonTitle').textContent=data.lesson;
+    $('teacherLine').textContent=data.teacher_name ? 'إعداد: '+data.teacher_name : '';
+    $('questions').innerHTML=data.questions.map(q =>
+      `<div class="q"><b>${q.number}. ${q.question}</b>${q.answer ? `<div class="ans">الإجابة: ${q.answer}</div>` : ''}</div>`
+    ).join('');
+    $('result').classList.remove('hidden');
+    $('status').textContent='';
+    $('result').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){
+    $('status').textContent='حدث خطأ في الاتصال. أعد المحاولة.';
+  }finally{
+    $('generate').disabled=false;
+  }
+});
+
+$('print').addEventListener('click',()=>window.print());
+$('edit').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+</script>
+</body>
+</html>
