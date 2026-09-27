@@ -1,0 +1,32 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>الخطة الأسبوعية الذكية | أنجز AI</title><style>html,body{margin:0;height:100%;overflow:hidden}iframe{border:0;width:100%;height:100%}</style></head><body><iframe id="app" src="weekly-plan.html"></iframe><script>
+const frame=document.getElementById('app');
+frame.addEventListener('load',()=>{
+ const w=frame.contentWindow,d=w.document;
+ function weekNo(){const t=(d.getElementById('teacherWeek')?.textContent||d.getElementById('activeWeek')?.textContent||'');const m=t.match(/(\d+)/);return m?Math.max(1,Math.min(20,+m[1])):1}
+ function applySmart(){
+  setTimeout(()=>{
+   const box=d.getElementById('lessonChoices'),picker=d.getElementById('lessonPicker'),manual=d.getElementById('manualLessonBox');
+   if(!box||!picker||picker.classList.contains('hide'))return;
+   const checks=[...box.querySelectorAll('input[type=checkbox]')]; if(!checks.length)return;
+   checks.forEach(c=>c.checked=false);
+   const wk=weekNo(),active=[1,2,3,5,6,7,8,9,10,11,12,14,15,16,17,18,19],pos=Math.max(0,active.indexOf(wk));
+   if([4,13,20].includes(wk)){
+     const note=d.getElementById('smartSuggestion');if(note)note.innerHTML='<b>✨ اقتراح أنجز:</b> هذا أسبوع خفيف/إجازة أو اختبارات؛ راجعي الخطة قبل إضافة درس.';return;
+   }
+   const per=Math.max(1,Math.ceil(checks.length/active.length)),start=Math.min(checks.length-1,pos*per),chosen=checks.slice(start,Math.min(checks.length,start+per));
+   chosen.forEach(c=>{c.checked=true;c.dispatchEvent(new Event('change',{bubbles:true}))});
+   const labels=chosen.map(c=>c.closest('label')?.textContent.trim()).filter(Boolean);
+   const ta=d.getElementById('lessons');if(ta&&labels.length)ta.value=labels.join('\n');
+   const hw=d.getElementById('homework');if(hw&&labels.length&&!hw.value.trim())hw.value='حل تدريبات الدروس المقترحة ومراجعتها';
+   let note=d.getElementById('smartSuggestion');
+   if(!note){note=d.createElement('div');note.id='smartSuggestion';note.style.cssText='background:#eefaf6;border:1px solid #b9e5d4;padding:12px;border-radius:11px;margin:10px 0;color:#12604b';picker.parentNode.insertBefore(note,picker)}
+   note.innerHTML='<b>✨ اقتراح أنجز للأسبوع '+wk+':</b> تم تحديد الدروس المقترحة تلقائيًا. يمكنك تعديل الاختيار قبل الحفظ.';
+   const details=picker.querySelector('details');if(details)details.open=true;if(manual)manual.classList.add('hide');
+  },120);
+ }
+ const oldRender=w.renderLessons;if(typeof oldRender==='function')w.renderLessons=function(){const r=oldRender.apply(this,arguments);applySmart();return r};
+ const oldFill=w.fillSubjects;if(typeof oldFill==='function')w.fillSubjects=function(){const r=oldFill.apply(this,arguments);setTimeout(()=>{if(typeof w.renderLessons==='function')w.renderLessons()},80);return r};
+ d.addEventListener('change',e=>{if(e.target?.id==='grade'||e.target?.id==='subject')applySmart()});
+ setTimeout(applySmart,700);
+});
+</script></body></html>
