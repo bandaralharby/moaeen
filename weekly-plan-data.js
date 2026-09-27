@@ -20,18 +20,3 @@ window.lessonData={
 'التربية الفنية':[{'g':'الوحدة الأولى: مجال الرسم','l':['الطبيعة في بلادي','الفن والطبيعة','أجدادنا وفن الرسم']},{'g':'الوحدة الثانية: مجال الرسم الزخرفي','l':['نباتاتي الطبيعية زخارف جميلة','إطارات جميلة لزخارفي المتعاكسة']}]
 }
 };
-
-/* عرض الدرس/الدروس المحددة مباشرة في رأس القائمة */
-(function(){
- function updateSelectedLessonTitle(){
-   const details=document.querySelector('.lessonAccordion');
-   const summary=details&&details.querySelector('summary');
-   if(!summary)return;
-   const picked=[...document.querySelectorAll('input[name="lessonPick"]:checked')].map(x=>x.value);
-   if(!picked.length){summary.textContent='تغيير / اختيار الدرس';return;}
-   const shown=picked.length<=2?picked.join(' + '):(picked.slice(0,2).join(' + ')+' + '+(picked.length-2)+' أخرى');
-   summary.textContent='الدرس المقترح: '+shown+' — تغيير';
- }
- document.addEventListener('change',e=>{if(e.target&&e.target.name==='lessonPick')updateSelectedLessonTitle()});
- document.addEventListener('DOMContentLoaded',()=>{updateSelectedLessonTitle();setInterval(updateSelectedLessonTitle,400)});
-})();
