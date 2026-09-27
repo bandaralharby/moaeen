@@ -5,3 +5,4 @@ document.write('<script src="weekly-plan-data-4-fix.js?v=2"><\/script>');
 document.write('<script src="weekly-plan-data-5.js?v=2"><\/script>');
 document.write('<script src="weekly-plan-data-6.js?v=2"><\/script>');
 document.write('<script src="weekly-plan-islamic-split.js?v=2"><\/script>');
+document.write('<script src="weekly-plan-smart.js?v=20260928-1"><\/script>');
