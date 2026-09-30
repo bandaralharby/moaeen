@@ -1,4 +1,4 @@
-/* NAFS PDF v49 - real A4 page containers */
+/* NAFS PDF v50 - measured A4 pagination with protected footer */
 window.NAFS_PDF={
  async download(el,name){
   if(!el) throw Error('report missing');
@@ -7,13 +7,12 @@ window.NAFS_PDF={
   await document.fonts?.ready;
   const teacher=(el.querySelector('.sig div:first-child b')?.textContent||'........................').trim();
   const principal=(el.querySelector('.sig div:last-child b')?.textContent||'........................').trim();
-  const sourceHead=el.querySelector('.rhead');
-  const sourceMeta=el.querySelector('.metaCards');
+  const sourceHead=el.querySelector('.rhead'), sourceMeta=el.querySelector('.metaCards');
   const sourceBlocks=[...el.querySelectorAll('.rbody > .section,.rbody > .two')];
   const host=document.createElement('div');host.id='nafsPdfHost';
-  const css=document.createElement('style');css.id='nafsPdf49Style';css.textContent=`
+  const css=document.createElement('style');css.id='nafsPdf50Style';css.textContent=`
   #nafsPdfHost{position:fixed;left:-20000px;top:0;width:1120px;background:#ddd;direction:rtl;font-family:Tahoma,Arial,sans-serif}
-  #nafsPdfHost .pdfPage{width:1120px;height:1584px;box-sizing:border-box;padding:18px 22px 126px;position:relative;overflow:hidden;background:linear-gradient(155deg,#fbfcfa,#f3f6f2);color:#24332e}
+  #nafsPdfHost .pdfPage{width:1120px;height:1584px;box-sizing:border-box;padding:18px 22px 0;position:relative;overflow:hidden;background:linear-gradient(155deg,#fbfcfa,#f3f6f2);color:#24332e}
   #nafsPdfHost .rhead{height:170px;position:relative;border-radius:27px;padding:32px 48px 20px 245px;background:linear-gradient(120deg,#153e38,#23665a 58%,#3b8370);overflow:hidden;text-align:center}
   #nafsPdfHost .rhead h1{margin:0 0 5px;color:#fff;font-size:48px;font-weight:700;text-align:center}
   #nafsPdfHost .rsub{color:#e8f2ee;font-size:23px;font-weight:600;text-align:center}
@@ -21,8 +20,8 @@ window.NAFS_PDF={
   #nafsPdfHost .metaCards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:14px 6px 12px;padding:0 5px}
   #nafsPdfHost .metaCard{background:#fff;border:1px solid #e7ece8;border-radius:13px;padding:6px 8px;min-height:64px;text-align:center;color:#263b34;font-size:21px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center}
   #nafsPdfHost .metaCard b{display:block;color:#2b7563;font-size:18px;margin-bottom:2px}
-  #nafsPdfHost .pageBody{padding:0}
-  #nafsPdfHost .section{margin:0 0 10px;border:1px solid #e7ede9;border-radius:18px;overflow:hidden;background:#fff}
+  #nafsPdfHost .pageBody{position:relative;padding:0 0 6px}
+  #nafsPdfHost .section{margin:0 0 10px;border:1px solid #e7ede9;border-radius:18px;overflow:hidden;background:#fff;break-inside:avoid;page-break-inside:avoid}
   #nafsPdfHost .stitle{padding:8px 14px;text-align:center;background:#e2eee8;color:#24594b;font-size:27px;font-weight:800}
   #nafsPdfHost .scontent{padding:10px 19px 11px;background:#fff;color:#202e2a;font-size:25px;font-weight:500;line-height:1.46;text-align:center}
   #nafsPdfHost .scontent *{text-align:center}
@@ -30,7 +29,7 @@ window.NAFS_PDF={
   #nafsPdfHost .skillHero{border:0;background:linear-gradient(135deg,#dcefe6,#c9e2d7)}
   #nafsPdfHost .skillHero .stitle{background:linear-gradient(120deg,#225d51,#3c806e);color:#fff;font-size:26px}
   #nafsPdfHost .skillHero .scontent{background:transparent;color:#133f35;font-size:23px;font-weight:800;padding:9px 15px 10px}
-  #nafsPdfHost .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 10px;align-items:stretch}
+  #nafsPdfHost .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 10px;align-items:stretch;break-inside:avoid;page-break-inside:avoid}
   #nafsPdfHost .two .section{margin:0;min-height:155px;display:flex;flex-direction:column}
   #nafsPdfHost .two .section .scontent{flex:1;display:flex;align-items:center;justify-content:center;font-size:23px;line-height:1.46;padding:10px 14px}
   #nafsPdfHost .two .section:first-child{background:#fff8e8;border-color:#edddb5}
@@ -39,7 +38,7 @@ window.NAFS_PDF={
   #nafsPdfHost .two .section:last-child .scontent{background:#f0f5f5}
   #nafsPdfHost .thinkingPills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
   #nafsPdfHost .thinkingPills span{display:flex;align-items:center;justify-content:center;min-height:41px;padding:5px 8px;border-radius:999px;background:#fff;border:1px solid #bfd1d1;color:#31595b;font-size:21px;font-weight:800}
-  #nafsPdfHost .pageFooter{position:absolute;left:48px;right:48px;bottom:18px;height:82px;text-align:center}
+  #nafsPdfHost .pageFooter{position:absolute;left:48px;right:48px;bottom:18px;height:86px;text-align:center;background:linear-gradient(to bottom,rgba(247,248,245,0),#f7f8f5 18%);padding-top:8px;z-index:5}
   #nafsPdfHost .fsigs{display:grid;grid-template-columns:1fr 1fr;gap:90px}
   #nafsPdfHost .fsig{border-top:2px solid #8fb2a7;padding-top:4px;color:#2b7563;font-size:20px;font-weight:800}
   #nafsPdfHost .fsig b{display:block;color:#173f35;font-size:21px;margin-top:1px}
@@ -47,20 +46,25 @@ window.NAFS_PDF={
   `;
   document.head.appendChild(css);document.body.appendChild(host);
   const footer=()=>`<div class="pageFooter"><div class="fsigs"><div class="fsig">المعلمة<b>${this.esc(teacher)}</b></div><div class="fsig">مديرة المدرسة<b>${this.esc(principal)}</b></div></div><div class="fcap">خطة نافس المستدامة • تقرير مبني على المهارات المختارة</div></div>`;
-  const makePage=(first=false)=>{const p=document.createElement('div');p.className='pdfPage';if(first){const h=sourceHead.cloneNode(true);const logo=document.createElement('img');logo.className='nafsBrand';logo.src='IMG_3946.png?v=49';logo.alt='وزارة التعليم';h.prepend(logo);p.appendChild(h);p.appendChild(sourceMeta.cloneNode(true))}const body=document.createElement('div');body.className='pageBody';p.appendChild(body);p.insertAdjacentHTML('beforeend',footer());host.appendChild(p);return {page:p,body};};
+  const makePage=(first=false)=>{const p=document.createElement('div');p.className='pdfPage';if(first){const h=sourceHead.cloneNode(true);const logo=document.createElement('img');logo.className='nafsBrand';logo.src='IMG_3946.png?v=50';logo.alt='وزارة التعليم';h.prepend(logo);p.appendChild(h);p.appendChild(sourceMeta.cloneNode(true))}const body=document.createElement('div');body.className='pageBody';p.appendChild(body);p.insertAdjacentHTML('beforeend',footer());host.appendChild(p);return{page:p,body};};
+  const prepare=(src)=>{const node=src.cloneNode(true);if(node.classList.contains('two')){const box=node.querySelector('.section:last-child .scontent');if(box){const parts=box.textContent.split(/[،,]/).map(x=>x.trim()).filter(Boolean);if(parts.length)box.innerHTML='<div class="thinkingPills">'+parts.map(x=>'<span>'+this.esc(x)+'</span>').join('')+'</div>'}}return node};
   try{
-   let cur=makePage(true);let pages=[cur.page];
+   let cur=makePage(true),pages=[cur.page];
+   const SAFE_BOTTOM=1450; // absolute y inside 1584px A4; footer begins below this protected line
    for(const src of sourceBlocks){
-    const node=src.cloneNode(true);
-    if(node.classList.contains('two')){const box=node.querySelector('.section:last-child .scontent');if(box){const parts=box.textContent.split(/[،,]/).map(x=>x.trim()).filter(Boolean);if(parts.length)box.innerHTML='<div class="thinkingPills">'+parts.map(x=>'<span>'+this.esc(x)+'</span>').join('')+'</div>'}}
-    cur.body.appendChild(node);
-    const limit=cur.page.clientHeight-126;
-    const pageTop=cur.page.getBoundingClientRect().top;
-    const bottom=node.getBoundingClientRect().bottom-pageTop;
-    if(bottom>limit){
-      node.remove();cur=makePage(false);pages.push(cur.page);cur.body.appendChild(node);
+    const node=prepare(src);cur.body.appendChild(node);
+    let pageTop=cur.page.getBoundingClientRect().top;
+    let bottom=node.getBoundingClientRect().bottom-pageTop;
+    if(bottom>SAFE_BOTTOM){
+      node.remove();
+      cur=makePage(false);pages.push(cur.page);cur.body.appendChild(node);
+      pageTop=cur.page.getBoundingClientRect().top;bottom=node.getBoundingClientRect().bottom-pageTop;
+      // A single unusually tall block may exceed one page; keep it intact rather than overlap footer.
+      if(bottom>SAFE_BOTTOM){node.style.fontSize='inherit';node.style.maxHeight=(SAFE_BOTTOM-30)+'px';node.style.overflow='hidden'}
     }
    }
+   // Remove genuinely empty continuation pages only.
+   pages=pages.filter((p,i)=>i===0||p.querySelector('.pageBody')?.children.length);
    await Promise.all([...host.querySelectorAll('img')].map(i=>i.complete?Promise.resolve():new Promise(r=>{i.onload=i.onerror=r})));
    const {jsPDF}=window.jspdf,pdf=new jsPDF({orientation:'p',unit:'mm',format:'a4',compress:true});
    for(let i=0;i<pages.length;i++){
