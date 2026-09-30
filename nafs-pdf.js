@@ -1,23 +1,2 @@
-/* تنزيل تقرير نافس PDF في صفحة A4 واحدة بدون نافذة الطباعة */
-window.NAFS_PDF={
- async download(element,filename){
-  if(!element) throw new Error('report element missing');
-  const oldDisplay=element.style.display,oldWidth=element.style.width,oldMax=element.style.maxWidth,oldPadding=element.style.padding;
-  element.style.display='block';element.style.width='794px';element.style.maxWidth='794px';element.style.padding='18px 24px';
-  element.classList.add('pdf-one-page');
-  try{
-   if(!window.html2canvas) await this.load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-   if(!window.jspdf) await this.load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-   await document.fonts?.ready;
-   const canvas=await html2canvas(element,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false,width:794,windowWidth:794,scrollX:0,scrollY:0});
-   const img=canvas.toDataURL('image/jpeg',0.97),{jsPDF}=window.jspdf;
-   const pdf=new jsPDF({orientation:'p',unit:'mm',format:'a4',compress:true});
-   const margin=7,maxW=196,maxH=283,ratio=canvas.width/canvas.height;
-   let w=maxW,h=w/ratio;if(h>maxH){h=maxH;w=h*ratio}
-   const x=(210-w)/2,y=(297-h)/2;
-   pdf.addImage(img,'JPEG',x,y,w,h,undefined,'FAST');
-   pdf.save(filename||'nafs-report.pdf');
-  } finally {element.classList.remove('pdf-one-page');element.style.display=oldDisplay;element.style.width=oldWidth;element.style.maxWidth=oldMax;element.style.padding=oldPadding}
- },
- load(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
-};
+/* PDF A4 صفحة واحدة - v3 */
+window.NAFS_PDF={async download(el,name){if(!el)throw Error('report missing');const old={display:el.style.display,width:el.style.width,maxWidth:el.style.maxWidth,padding:el.style.padding};el.style.display='block';el.style.width='794px';el.style.maxWidth='794px';el.style.padding='16px 28px';el.style.background='#fff';const css=document.createElement('style');css.id='nafsPdfCompact';css.textContent=`#pdfReport{font-size:12px!important;line-height:1.35!important}#pdfReport h1{font-size:22px!important;margin:0 0 4px!important}#pdfReport .meta{font-size:10px!important;margin-top:4px!important}#pdfReport .ttl{font-size:12px!important;margin-top:6px!important;margin-bottom:2px!important}#pdfReport .box{font-size:11px!important;line-height:1.45!important;padding:5px 8px!important;margin:2px 0 4px!important;border-radius:6px!important}#pdfReport .sig{margin-top:14px!important;gap:60px!important;font-size:11px!important}#pdfReport .sig div{padding-top:5px!important}`;document.head.appendChild(css);try{if(!window.html2canvas)await this.load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');if(!window.jspdf)await this.load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');await document.fonts?.ready;const c=await html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#fff',logging:false,width:794,windowWidth:794,scrollX:0,scrollY:0});const {jsPDF}=window.jspdf,p=new jsPDF({orientation:'p',unit:'mm',format:'a4',compress:true}),mw=196,mh=283,r=c.width/c.height;let w=mw,h=w/r;if(h>mh){h=mh;w=h*r}p.addImage(c.toDataURL('image/jpeg',.97),'JPEG',(210-w)/2,(297-h)/2,w,h,undefined,'FAST');p.save(name||'nafs-report.pdf')}finally{css.remove();el.style.display=old.display;el.style.width=old.width;el.style.maxWidth=old.maxWidth;el.style.padding=old.padding}},load(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}};
