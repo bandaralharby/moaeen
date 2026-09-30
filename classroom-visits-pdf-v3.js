@@ -1,0 +1,24 @@
+/* Professional PDF renderer override for classroom visits */
+async function imageToDataURL(url){const r=await fetch(url,{mode:'cors'});if(!r.ok)throw new Error('logo');const b=await r.blob();return await new Promise((ok,no)=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.onerror=no;fr.readAsDataURL(b)})}
+function pdfCard(doc,x,y,w,h,title,items){doc.setDrawColor(205,218,221);doc.setFillColor(250,252,252);doc.roundedRect(x,y,w,h,3,3,'FD');doc.setFillColor(232,244,242);doc.roundedRect(x,y,w,12,3,3,'F');doc.setFillColor(232,244,242);doc.rect(x,y+8,w,4,'F');doc.setTextColor(19,75,80);doc.setFontSize(12);doc.text(title,x+w/2,y+8,{align:'center'});doc.setTextColor(37,50,54);let yy=y+19;for(const t of items){const ps=doc.splitTextToSize('• '+t,w-10);for(const p of ps){pdfText(doc,p,x+w-5,yy,10);yy+=5.5;if(yy>y+h-5)return}}if(!items.length)pdfText(doc,'—',x+w-5,yy,10)}
+async function savePDF(){build();try{const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});await loadArabicFont(doc);
+// page frame and identity
+ doc.setDrawColor(226,234,236);doc.roundedRect(7,7,196,283,3,3);
+ doc.setFillColor(246,250,250);doc.roundedRect(10,10,190,34,3,3,'F');
+ doc.setFillColor(17,142,132);doc.rect(10,10,190,2.2,'F');
+ try{const logo=await imageToDataURL('https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Ministry_of_Education_%28Saudi_Arabia%29_logo.svg/512px-Ministry_of_Education_%28Saudi_Arabia%29_logo.svg.png');doc.addImage(logo,'PNG',14,15,37,20)}catch(e){doc.setTextColor(18,112,105);doc.setFontSize(14);doc.text('وزارة التعليم',32,27,{align:'center'})}
+ doc.setTextColor(20,61,71);doc.setFontSize(20);doc.text('تقرير تبادل الزيارات الصفية',111,23,{align:'center'});doc.setFontSize(9);doc.setTextColor(102,122,128);doc.text('توثيق الزيارة وتبادل الخبرات والممارسات المهنية',111,30,{align:'center'});doc.setFillColor(231,246,242);doc.roundedRect(87,34,48,6,3,3,'F');doc.setTextColor(22,120,110);doc.setFontSize(8);doc.text('تطوير مهني • تبادل خبرات',111,38.2,{align:'center'});
+ doc.setTextColor(55,80,87);pdfText(doc,'المملكة العربية السعودية',196,20,8.5);pdfText(doc,'وزارة التعليم',196,26,8.5);
+ // school
+ doc.setFillColor(240,247,247);doc.roundedRect(10,47,190,12,2,2,'F');doc.setTextColor(20,62,72);doc.setFontSize(14);doc.text(val('school')||'اسم المدرسة',105,54.8,{align:'center'});
+ // info cards
+ let y=62;const rows=[['تمت زيارة المعلم',val('visited'),'المادة',val('subject')],['الصف',val('grade'),'موضوع الدرس',val('lesson')],['اليوم',val('day'),'التاريخ الهجري / الحصة',(val('date')||'—')+' — '+val('period')]];
+ for(const r of rows){doc.setDrawColor(205,218,221);doc.roundedRect(10,y,190,10,1.5,1.5);doc.setFillColor(235,244,244);doc.rect(153,y,47,10,'F');doc.rect(58,y,47,10,'F');doc.setTextColor(22,70,77);pdfText(doc,r[0],196,y+6.5,9);pdfText(doc,r[2],101,y+6.5,9);doc.setTextColor(35,48,52);pdfText(doc,r[1],149,y+6.5,9.5);pdfText(doc,r[3],54,y+6.5,9.5);y+=11}
+ let vs=[...document.querySelectorAll('.visitor')].map(x=>x.value.trim()).filter(Boolean);doc.setFillColor(235,244,244);doc.roundedRect(10,y,190,8,1.5,1.5,'F');doc.setTextColor(22,70,77);doc.setFontSize(9.5);doc.text('المعلم الزائر',105,y+5.5,{align:'center'});y+=8;doc.setDrawColor(205,218,221);doc.roundedRect(10,y,190,9,1.5,1.5);doc.setTextColor(35,48,52);pdfText(doc,vs.join('، ')||'—',196,y+6,9.5);y+=13;
+ // four professional content cards
+ pdfCard(doc,106,y,94,56,'أهداف الزيارة',chosen('goals'));pdfCard(doc,10,y,92,56,'الممارسات والمميزات الملحوظة',chosen('strengths'));y+=60;pdfCard(doc,106,y,94,56,'أبرز جوانب الاستفادة',chosen('benefits'));pdfCard(doc,10,y,92,56,'التوصيات',chosen('recommendations'));y+=60;
+ if(val('notes')){doc.setDrawColor(205,218,221);doc.setFillColor(248,251,251);doc.roundedRect(10,y,190,14,2,2,'FD');doc.setTextColor(22,70,77);pdfText(doc,'ملاحظات',196,y+5,9);doc.setTextColor(45,55,58);const ns=doc.splitTextToSize(val('notes'),170);pdfText(doc,ns.slice(0,1)[0]||'—',196,y+10.5,8.5);y+=18}
+ // signatures anchored neatly near bottom
+ const sy=Math.max(y,263);doc.setDrawColor(205,218,221);doc.setFillColor(250,252,252);doc.roundedRect(106,sy,94,19,2,2,'FD');doc.roundedRect(10,sy,92,19,2,2,'FD');doc.setTextColor(38,64,70);pdfText(doc,'تمت زيارة المعلم: '+(val('visited')||'—'),196,sy+7,9);pdfText(doc,'التوقيع: __________________',196,sy+14,8.5);pdfText(doc,'اعتماد مدير/ة المدرسة: '+(val('manager')||'—'),98,sy+7,9);pdfText(doc,'التوقيع: __________________',98,sy+14,8.5);
+ doc.setDrawColor(226,234,236);doc.line(10,286,200,286);doc.setTextColor(135,151,155);doc.setFontSize(7.5);doc.text('تقرير تبادل الزيارات الصفية • توثيق الممارسات المهنية',105,289,{align:'center'});
+ doc.save('تقرير-تبادل-الزيارات-الصفية.pdf');}catch(e){console.error(e);alert('تعذر إنشاء PDF. تحقق من اتصال الإنترنت ثم حاول مرة أخرى.')}}
